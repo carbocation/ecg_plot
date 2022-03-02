@@ -4,10 +4,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import AutoMinorLocator
 import os
+import os.path
 from math import ceil
 
 
-def _ax_plot(ax, x, y, secs=10, lwidth=0.5, amplitude_ecg = 1.8, time_ticks =0.2):
+def _ax_plot(ax, x, y, secs=10, lwidth=0.5, amplitude_ecg=1.8, time_ticks=0.2):
     ax.set_xticks(np.arange(0, 11, time_ticks))
     ax.set_yticks(np.arange(-ceil(amplitude_ecg), ceil(amplitude_ecg), 1.0))
 
@@ -85,27 +86,27 @@ def plot_12(
         _ax_plot(t_ax, np.arange(0, len(ecg[t_lead]) * step, step), ecg[t_lead], seconds)
 
 
-def plot(
-        ecg, 
-        sample_rate    = 500, 
-        title          = 'ECG 12', 
-        lead_index     = lead_index, 
-        lead_order     = None,
-        style          = None,
-        columns        = 2,
-        row_height     = 6,
-        show_lead_name = True,
-        show_grid      = True,
-        show_separate_line  = True,
-        ):
+def plot(ecg,
+         sample_rate=500,
+         title='',
+         lead_index=lead_index,
+         lead_order=None,
+         style=None,
+         columns=2,
+         row_height=6,
+         show_lead_name=True,
+         show_grid=True,
+         show_separate_line=True,
+         hide_axes=False):
     """Plot multi lead ECG chart.
     # Arguments
         ecg        : m x n ECG signal data, which m is number of leads and n is length of signal.
         sample_rate: Sample rate of the signal.
         title      : Title which will be shown on top off chart
-        lead_index : Lead name array in the same order of ecg, will be shown on 
-            left of signal plot, defaults to ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6']
-        lead_order : Lead display order 
+        lead_index : Lead name array in the same order of ecg, will be shown on
+            left of signal plot, defaults to:
+                ['I', 'II', 'III', 'aVR', 'aVL', 'aVF', 'V1', 'V2', 'V3', 'V4', 'V5', 'V6']
+        lead_order : Lead display order
         columns    : display columns, defaults to 2
         style      : display style, defaults to None, can be 'bw' which means black white
         row_height :   how many grid should a lead signal have,
@@ -113,25 +114,28 @@ def plot(
         show_grid      : show grid
         show_separate_line  : show separate line
     """
+    plt.rcParams.update({'font.size': 10, 'font.family': 'serif'})
 
     if not lead_order:
         lead_order = list(range(0, len(ecg)))
+
     secs = len(ecg[0]) / sample_rate
     leads = len(lead_order)
     rows = int(ceil(leads / columns))
+
     # display_factor = 2.5
     display_factor = 1
     line_width = 0.5
-    fig, ax = plt.subplots(figsize=(secs * columns * display_factor, rows * row_height / 5 * display_factor))
+    fig, ax = plt.subplots(
+        figsize=(secs * columns * display_factor, rows * row_height / 5 * display_factor))
+    print(type(ax))
     display_factor = display_factor ** 0.5
-    fig.subplots_adjust(
-        hspace = 0, 
-        wspace = 0,
-        left   = 0,  # the left side of the subplots of the figure
-        right  = 1,  # the right side of the subplots of the figure
-        bottom = 0,  # the bottom of the subplots of the figure
-        top    = 1
-        )
+    fig.subplots_adjust(hspace=0,
+                        wspace=0,
+                        left=0,     # the left side of the subplots of the figure
+                        right=1,    # the right side of the subplots of the figure
+                        bottom=0,   # the bottom of the subplots of the figure
+                        top=1)
 
     fig.suptitle(title)
 
@@ -152,13 +156,19 @@ def plot(
         color_minor = '#FFD5DC'
         color_line = '#000000'
 
-    # plt.axis('off')
+    if hide_axes:
+        ax.spines['bottom'].set_color(color_major)
+        ax.spines['top'].set_color(color_major)
+        ax.spines['right'].set_color(color_major)
+        ax.spines['left'].set_color(color_major)
+        ax.tick_params(axis='x', colors='white', which="both")
+        ax.tick_params(axis='y', colors='white', which="both")
+
     if show_grid:
-        ax.set_xticks(np.arange(x_min, x_max, 0.2))
-        ax.set_yticks(np.arange(y_min, y_max, 0.5))
+        ax.set_xticks(np.arange(x_min, x_max, 0.2), "")
+        ax.set_yticks(np.arange(y_min, y_max, 0.5), "")
 
         ax.minorticks_on()
-
         ax.xaxis.set_minor_locator(AutoMinorLocator(5))
 
         ax.grid(which='major', linestyle='-', linewidth=0.5 * display_factor, color=color_major)
@@ -166,6 +176,7 @@ def plot(
 
     ax.set_ylim(y_min, y_max)
     ax.set_xlim(x_min, x_max)
+    print(f'x_max={x_max}')
 
     for c in range(0, columns):
         for i in range(0, rows):
@@ -216,14 +227,17 @@ def plot_1(ecg, sample_rate=500, title = 'ECG', fig_width = 15, fig_height = 2, 
     #plt.rcParams['lines.linewidth'] = 5
     step = 1.0/sample_rate
     _ax_plot(ax,np.arange(0,len(ecg)*step,step),ecg, seconds, line_w, ecg_amp,timetick)
-    
+
+
 DEFAULT_PATH = './'
 show_counter = 1
-def show_svg(tmp_path = DEFAULT_PATH):
+
+
+def show_svg(tmp_path=DEFAULT_PATH):
     """Plot multi lead ECG chart.
     # Arguments
         tmp_path: path for temporary saving the result svg file
-    """ 
+    """
     global show_counter
     file_name = tmp_path + "show_tmp_file_{}.svg".format(show_counter)
     plt.savefig(file_name)
@@ -236,7 +250,7 @@ def show():
     plt.show()
 
 
-def save_as_png(file_name, path = DEFAULT_PATH, dpi = 100, layout='tight'):
+def save_as_png(file_name, path=DEFAULT_PATH, dpi=300, layout='tight'):
     """Plot multi lead ECG chart.
     # Arguments
         file_name: file_name
@@ -245,10 +259,12 @@ def save_as_png(file_name, path = DEFAULT_PATH, dpi = 100, layout='tight'):
         layout   : Set equal to "tight" to include ax labels on saved image
     """
     plt.ioff()
-    plt.savefig(path + file_name + '.png', dpi = dpi, bbox_inches=layout)
+    dst_file = os.path.join(path, f'{file_name}.png')
+    plt.savefig(dst_file, dpi=dpi, bbox_inches=layout)
     plt.close()
 
-def save_as_svg(file_name, path = DEFAULT_PATH):
+
+def save_as_svg(file_name, path=DEFAULT_PATH):
     """Plot multi lead ECG chart.
     # Arguments
         file_name: file_name
@@ -258,7 +274,8 @@ def save_as_svg(file_name, path = DEFAULT_PATH):
     plt.savefig(path + file_name + '.svg')
     plt.close()
 
-def save_as_jpg(file_name, path = DEFAULT_PATH):
+
+def save_as_jpg(file_name, path=DEFAULT_PATH):
     """Plot multi lead ECG chart.
     # Arguments
         file_name: file_name

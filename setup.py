@@ -10,8 +10,10 @@ requires = ['matplotlib']
 
 setuptools.setup(
     name='ecg_plot',
-    version='0.2.8',
-    # scripts=['ecg_plot'] ,
+    # version='0.2.8',
+    version_config=True,
+    setup_requires=['setuptools-git-versioning'],
+    # scripts=['ecg_plot'],
     author="dy1901",
     author_email="dy1901@gmail.com",
     license='MIT License',
