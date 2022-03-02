@@ -6,6 +6,8 @@ import setuptools
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+requires = ['matplotlib']
+
 setuptools.setup(
     name='ecg_plot',
     version='0.2.8',
@@ -19,11 +21,11 @@ setuptools.setup(
     url="https://github.com/dy1901/ecg_plot",
     # packages=setuptools.find_packages(),
     # py_modules=['src.ecg_plot'],
-    packages = ['ecg_plot'],
-    install_requires=[],
+    packages=['ecg_plot'],
+    install_requires=requires,
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
- )
+)
