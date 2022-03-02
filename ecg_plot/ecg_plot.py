@@ -12,9 +12,6 @@ def _ax_plot(ax, x, y, secs=10, lwidth=0.5, amplitude_ecg=1.8, time_ticks=0.2):
     ax.set_xticks(np.arange(0, 11, time_ticks))
     ax.set_yticks(np.arange(-ceil(amplitude_ecg), ceil(amplitude_ecg), 1.0))
 
-    #ax.set_yticklabels([])
-    #ax.set_xticklabels([])
-
     ax.minorticks_on()
 
     ax.xaxis.set_minor_locator(AutoMinorLocator(5))
@@ -86,7 +83,7 @@ def plot_12(
         _ax_plot(t_ax, np.arange(0, len(ecg[t_lead]) * step, step), ecg[t_lead], seconds)
 
 
-def plot(ecg,
+def plot(all_ecg,
          sample_rate=500,
          title='',
          lead_index=lead_index,
@@ -116,19 +113,25 @@ def plot(ecg,
     """
     plt.rcParams.update({'font.size': 10, 'font.family': 'serif'})
 
+    ecg = all_ecg[:, :1250]
+
     if not lead_order:
         lead_order = list(range(0, len(ecg)))
 
     secs = len(ecg[0]) / sample_rate
     leads = len(lead_order)
-    rows = int(ceil(leads / columns))
+    # 3 rows to image 12 short leads
+    short_rows = int(ceil(leads / columns))
+    # 3 rows to image 3 long leads
+    long_rows = 3
+    all_rows = short_rows + long_rows
 
     # display_factor = 2.5
     display_factor = 1
     line_width = 0.5
     fig, ax = plt.subplots(
-        figsize=(secs * columns * display_factor, rows * row_height / 5 * display_factor))
-    print(type(ax))
+        figsize=(secs * columns * display_factor, all_rows * row_height / 5 * display_factor))
+
     display_factor = display_factor ** 0.5
     fig.subplots_adjust(hspace=0,
                         wspace=0,
@@ -141,7 +144,7 @@ def plot(ecg,
 
     x_min = 0
     x_max = columns * secs
-    y_min = row_height / 4 - (rows / 2) * row_height
+    y_min = row_height / 4 - (all_rows / 2) * row_height
     y_max = row_height / 4
 
     if style == 'bw':
@@ -176,30 +179,53 @@ def plot(ecg,
 
     ax.set_ylim(y_min, y_max)
     ax.set_xlim(x_min, x_max)
-    print(f'x_max={x_max}')
 
     for c in range(0, columns):
-        for i in range(0, rows):
-            if (c * rows + i < leads):
-                y_offset = -(row_height / 2) * ceil(i % rows)
+        for i in range(0, short_rows):
+            if c * short_rows + i < leads:
+                x_offset = secs * c
+                y_offset = -(row_height / 2) * ceil(i % short_rows)
                 # if (y_offset < -5):
                 #     y_offset = y_offset + 0.25
 
-                x_offset = 0
-                if c > 0:
-                    x_offset = secs * c
-                    if show_separate_line:
-                        ax.plot([x_offset, x_offset], [ecg[t_lead][0] + y_offset - 0.3, ecg[t_lead][0] + y_offset + 0.3], linewidth=line_width * display_factor, color=color_line)
+                t_lead = lead_order[c * short_rows + i]
 
-                t_lead = lead_order[c * rows + i]
+                if c > 0:
+                    if show_separate_line:
+                        ax.plot([x_offset, x_offset],
+                                [ecg[t_lead][0] + y_offset - 0.3, ecg[t_lead][0] + y_offset + 0.3],
+                                linewidth=line_width * display_factor * 2,
+                                color='red')
 
                 step = 1.0 / sample_rate
                 if show_lead_name:
-                    ax.text(x_offset + 0.07, y_offset - 0.5, lead_index[t_lead], fontsize=9 * display_factor)
+                    ax.text(x_offset + 0.07,
+                            y_offset - 0.5,
+                            lead_index[t_lead],
+                            fontsize=9 * display_factor)
                 ax.plot(np.arange(0, len(ecg[t_lead]) * step, step) + x_offset,
                         ecg[t_lead] + y_offset,
                         linewidth=line_width * display_factor,
                         color=color_line)
+
+    # long rows
+    c = 0
+    lead_order = [6, 1, 10]  # ['V1', 'II', 'V5']
+    for j in range(short_rows, all_rows):
+        x_offset = 0
+        y_offset = -(row_height / 2) * ceil(j % all_rows)
+        t_lead = lead_order[j - short_rows]
+
+        step = 1.0 / sample_rate
+        if show_lead_name:
+            ax.text(x_offset + 0.07,
+                    y_offset - 0.5,
+                    lead_index[t_lead],
+                    fontsize=9 * display_factor)
+        ax.plot(np.arange(0, len(all_ecg[t_lead]) * step, step) + x_offset,
+                all_ecg[t_lead] + y_offset,
+                linewidth=line_width * display_factor,
+                color=color_line)
 
 
 def plot_1(ecg, sample_rate=500, title = 'ECG', fig_width = 15, fig_height = 2, line_w = 0.5, ecg_amp = 1.8, timetick = 0.2):
