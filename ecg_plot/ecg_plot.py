@@ -113,12 +113,15 @@ def plot(all_ecg,
     """
     plt.rcParams.update({'font.size': 10, 'font.family': 'serif'})
 
-    ecg = all_ecg[:, :1250]
+    secs = 2.5
+    try:
+        ecg = all_ecg[:, :int(sample_rate*secs)]
+    except IndexError:
+        ecg = all_ecg
 
     if not lead_order:
         lead_order = list(range(0, len(ecg)))
-
-    secs = len(ecg[0]) / sample_rate
+    
     leads = len(lead_order)
     # 3 rows to image 12 short leads
     short_rows = int(ceil(leads / columns))
