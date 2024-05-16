@@ -212,7 +212,7 @@ def plot(all_ecg,
                         linewidth=line_width * display_factor,
                         color=color_line)
 
-    if ~show_rhythm_strips:
+    if not show_rhythm_strips:
         return
 
     c = 0
