@@ -94,7 +94,8 @@ def plot(all_ecg,
          show_lead_name=True,
          show_grid=True,
          show_separate_line=True,
-         hide_axes=False):
+         hide_axes=False,
+         show_rhythm_strips=True):
     """Plot multi lead ECG chart.
     # Arguments
         ecg        : m x n ECG signal data, which m is number of leads and n is length of signal.
@@ -211,7 +212,9 @@ def plot(all_ecg,
                         linewidth=line_width * display_factor,
                         color=color_line)
 
-    # long rows
+    if ~show_rhythm_strips:
+        return
+
     c = 0
     lead_order = [6, 1, 10]  # ['V1', 'II', 'V5']
     for j in range(short_rows, all_rows):
